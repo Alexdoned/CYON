@@ -23,17 +23,16 @@ const App = () => {
       "St. Theresa NTA",
     ],
     zing: [
-        "St. Thomas",
-        "St. Patrick Tudun wada",
-        "St. Stephen Bitako Yali Pastoral",
-        "St. Mary Bitako Mazara pastoral",
-       " St. Andrew Gampubong Pastoral",
+      "St. Thomas",
+      "St. Patrick Tudun wada",
+      "St. Stephen Bitako Yali Pastoral",
+      "St. Mary Bitako Mazara pastoral",
+      "St. Andrew Gampubong Pastoral",
     ],
     kpantisawa: [
-        "St. John Parish Kpantisawa",
-        "St. Peter Pupule",
-        "St. Theresa Mika pastoral",
-
+      "St. John Parish Kpantisawa",
+      "St. Peter Pupule",
+      "St. Theresa Mika pastoral",
     ],
     yakoko: [
       "St. Monica's yakoko",
@@ -49,7 +48,7 @@ const App = () => {
       "St Justina mayo Dassa",
       "St John Paul de second gulom",
       "Church of Assumption Kona",
-   ],
+    ],
   };
 
   const [selectedDenary, setSelectedDenary] = useState("");
@@ -110,12 +109,23 @@ const App = () => {
       };
       setSubmittedData(result);
       setErrors({});
+
+      
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        address: "",
+        occupation: "",
+      });
+      setSelectedDenary("");
+      setSelectedParish("");
+      setParishes([]);
     }
   };
 
   return (
     <div className="flex min-h-screen justify-center items-center flex-col bg-gray-100">
-
       <header className="flex flex-col items-center mb-6">
         <img src={logo} alt="CYON Logo" className="w-32 h-32 mb-4" />
         <h1 className="text-4xl text-center text-green-600 font-bold underline">
@@ -123,11 +133,9 @@ const App = () => {
         </h1>
       </header>
 
-      
       <div className="flex justify-center items-center flex-col gap-4 shadow-2xl rounded-4xl p-6 bg-white/90 w-full max-w-2xl">
         <h3 className="text-3xl font-extrabold mt-2">Diocesan Registration Form</h3>
 
-      
         <div className="flex flex-col w-full">
           <select
             id="denary"
@@ -163,7 +171,6 @@ const App = () => {
           {errors.parish && <p className="text-red-600">{errors.parish}</p>}
         </div>
 
-        
         <div className={`${selectedDenary && selectedParish ? "block" : "hidden"} w-full`}>
           <div className="flex items-center justify-center">
             <User />
@@ -194,7 +201,6 @@ const App = () => {
           </button>
         </div>
 
-        
         {submittedData && (
           <div className="mt-6 p-4 bg-green-100 border border-green-600 rounded-xl w-full">
             <h3 className="text-xl font-bold text-green-800">Form Submitted Successfully!</h3>
