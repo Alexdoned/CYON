@@ -137,7 +137,7 @@ const AdminDashboard = () => {
       const data = await response.json();
       setSubmissions(
         submissions.map((sub) =>
-          sub._id === id ? { ...sub, status: newStatus } : sub
+          sub.id === id ? { ...sub, status: newStatus } : sub
         )
       );
     } catch (err) {
@@ -156,7 +156,7 @@ const AdminDashboard = () => {
 
       if (!response.ok) throw new Error("Failed to delete submission");
 
-      setSubmissions(submissions.filter((sub) => sub._id !== id));
+      setSubmissions(submissions.filter((sub) => sub.id !== id));
       setDeleteConfirm(null);
     } catch (err) {
       alert("Error deleting submission: " + err.message);
@@ -362,7 +362,7 @@ const AdminDashboard = () => {
                             View
                           </button>
                           <button
-                            onClick={() => setDeleteConfirm(submission._id)}
+                            onClick={() => setDeleteConfirm(submission.id)}
                             className="text-red-600 hover:text-red-800 transition-colors inline-flex items-center gap-1"
                           >
                             <Trash2 className="w-4 h-4" />
