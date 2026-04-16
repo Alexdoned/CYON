@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Lock } from "lucide-react";
 import logo from "/cyonlogo.png";
 
 const Navbar = () => {
@@ -15,7 +15,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
             <img src={logo} alt="CYON Logo" className="w-10 h-10" />
             <span className="font-bold text-lg hidden sm:inline">CYON</span>
           </Link>
@@ -33,6 +33,19 @@ const Navbar = () => {
               className="bg-white text-green-800 px-4 py-2 rounded-lg font-semibold hover:bg-green-100 transition-colors duration-200"
             >
               Register
+            </Link>
+            <Link
+              to="/payment"
+              className="hover:text-green-200 transition-colors duration-200"
+            >
+              Payment
+            </Link>
+            <Link
+              to="/admin/login"
+              className="flex items-center gap-2 text-green-200 hover:text-white transition-colors duration-200 text-sm font-medium"
+            >
+              <Lock className="w-4 h-4" />
+              Admin
             </Link>
           </div>
 
@@ -67,6 +80,21 @@ const Navbar = () => {
               className="block px-3 py-2 bg-white text-green-800 rounded-md font-semibold hover:bg-green-100 transition-colors duration-200"
             >
               Register
+            </Link>
+            <Link
+              to="/payment"
+              onClick={() => setIsOpen(false)}
+              className="block px-3 py-2 rounded-md hover:bg-green-700 transition-colors duration-200"
+            >
+              Payment
+            </Link>
+            <Link
+              to="/admin/login"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 text-green-200 hover:text-white hover:bg-green-700 rounded-md transition-colors duration-200"
+            >
+              <Lock className="w-4 h-4" />
+              Admin Login
             </Link>
           </div>
         )}
