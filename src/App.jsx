@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Form from "./pages/Form";
 import Payment from "./pages/Payment";
+import Events from "./pages/Events";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -25,6 +26,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/register" element={<Form />} />
                 <Route path="/payment" element={<Payment />} />
+                <Route path="/events" element={<Events />} />
               </Routes>
             </>
           }
