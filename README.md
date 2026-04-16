@@ -1,16 +1,96 @@
-# React + Vite
+# CYON Jalingo Diocese Registration System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive web application for managing registrations and payments for the Catholic Youth Organization of Nigeria (CYON) - Jalingo Diocese.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- 📝 Online registration form with validation
+- 💳 Secure payment processing
+- 👨‍💼 Admin dashboard for managing registrations
+- 📱 Fully responsive design (mobile-friendly)
+- 🎨 Modern UI with Tailwind CSS
+- ⚡ Fast performance with Vite
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React 19 + Vite
+- **Styling**: Tailwind CSS v4
+- **Icons**: Lucide React
+- **Routing**: React Router DOM
+- **HTTP Client**: Axios
 
-## Expanding the ESLint configuration
+## Development
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/cyon-jalingo-registration.git
+cd cyon-jalingo-registration
+```
+
+2. Install dependencies
+```bash
+npm install
+```
+
+3. Set up environment variables
+```bash
+cp .env.example .env
+# Edit .env with your API URL
+```
+
+4. Start development server
+```bash
+npm run dev
+```
+
+## Deployment
+
+### Vercel Deployment
+
+1. **Connect to Vercel**
+   - Push your code to GitHub
+   - Connect your GitHub repository to Vercel
+   - Vercel will automatically detect the configuration
+
+2. **Environment Variables**
+   - In Vercel dashboard, add environment variable:
+   - `VITE_API_URL`: Your deployed backend API URL
+
+3. **Deploy**
+   - Vercel will build and deploy automatically on every push to main branch
+
+### Manual Build
+
+```bash
+npm run build
+npm run preview
+```
+
+## Project Structure
+
+```
+src/
+├── components/     # Reusable components
+├── pages/         # Page components
+├── assets/        # Static assets
+├── utils/         # Utility functions
+└── main.jsx       # App entry point
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is part of the CYON Jalingo Diocese registration system.
