@@ -6,6 +6,7 @@ const Leaders = () => {
   const [leaders, setLeaders] = useState([]);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [uploadForm, setUploadForm] = useState({
     name: '',
     year: new Date().getFullYear().toString(),
@@ -14,6 +15,8 @@ const Leaders = () => {
   });
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+  const getAdminToken = () => localStorage.getItem("admin_token");
 
   // Sample leaders data
   const sampleLeaders = [
@@ -36,6 +39,7 @@ const Leaders = () => {
   useEffect(() => {
     initScrollAnimations();
     fetchLeaders();
+    setIsAdmin(!!getAdminToken());
   }, []);
 
   const fetchLeaders = async () => {
@@ -86,8 +90,18 @@ const Leaders = () => {
       formData.append('achievement', uploadForm.achievement);
       formData.append('photo', uploadForm.photoFile);
 
+      const token = getAdminToken();
+      if (!token) {
+        alert('You must be logged in as an admin to add a leader.');
+        setIsProcessing(false);
+        return;
+      }
+
       const response = await fetch(`${API_URL}/leaders`, {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
         body: formData
       });
 
@@ -124,8 +138,17 @@ const Leaders = () => {
     }
 
     try {
+      const token = getAdminToken();
+      if (!token) {
+        alert('You must be logged in as an admin to delete a leader.');
+        return;
+      }
+
       const response = await fetch(`${API_URL}/leaders/${leaderId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       if (response.ok) {
@@ -157,13 +180,19 @@ const Leaders = () => {
 
         {/* Upload Button */}
         <div className="mb-8 text-center">
-          <button
-            onClick={() => setShowUploadForm(!showUploadForm)}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2 mx-auto"
-          >
-            <Upload className="w-5 h-5" />
-            Honor a Leader
-          </button>
+          {isAdmin ? (
+            <button
+              onClick={() => setShowUploadForm(!showUploadForm)}
+              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2 mx-auto"
+            >
+              <Upload className="w-5 h-5" />
+              Honor a Leader
+            </button>
+          ) : (
+            <p className="text-sm text-gray-600 mx-auto max-w-xl">
+              Leader profiles can only be added by an admin. All users can still view the leader recognition list.
+            </p>
+          )}
         </div>
 
         {/* Upload Form */}
@@ -281,16 +310,18 @@ const Leaders = () => {
                   <h3 className="text-xl font-bold text-green-800 mb-2">{leader.name}</h3>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-3">{leader.achievement}</p>
 
-                  {/* Delete Button - Only show if user is admin */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDelete(leader.id)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded hover:bg-red-100 transition-colors text-sm"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Remove
-                    </button>
-                  </div>
+                  {/* Delete Button - only visible to admin */}
+                  {isAdmin && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleDelete(leader.id)}
+                        className="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded hover:bg-red-100 transition-colors text-sm"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Remove
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </AnimatedSection>
