@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, Lock, Camera } from "lucide-react";
+import { Menu, X, Lock, Camera, Trophy } from "lucide-react";
 import logo from "/cyonlogo.png";
 
 const Navbar = () => {
@@ -34,6 +34,13 @@ const Navbar = () => {
             >
               <Camera className="w-4 h-4" />
               Events
+            </Link>
+            <Link
+              to="/leaders"
+              className="hover:text-green-200 transition-colors duration-200 flex items-center gap-2"
+            >
+              <Trophy className="w-4 h-4" />
+              Leaders
             </Link>
             <Link
               to="/register"
@@ -88,6 +95,14 @@ const Navbar = () => {
             >
               <Camera className="w-4 h-4" />
               Events
+            </Link>
+            <Link
+              to="/leaders"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-green-700 transition-colors duration-200"
+            >
+              <Trophy className="w-4 h-4" />
+              Leaders
             </Link>
             <Link
               to="/register"
