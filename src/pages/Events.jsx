@@ -368,7 +368,7 @@ const Events = () => {
                   <div className="flex items-center gap-4 text-sm text-green-100 mt-2">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
-                      {new Date(event.eventDate).toLocaleDateString()}
+                      {new Date(event.event_date || event.eventDate).toLocaleDateString()}
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
@@ -404,8 +404,8 @@ const Events = () => {
                   <p className="text-gray-600 text-sm mb-3">{event.description}</p>
 
                   <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>By {event.uploadedBy}</span>
-                    <span>{event.media.length} media files</span>
+                    <span>By {event.uploader_name || event.uploadedBy || 'Community'}</span>
+                    <span>{event.media?.length || 0} media files</span>
                   </div>
                 </div>
               </div>
