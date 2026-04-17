@@ -16,12 +16,26 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('registrations');
   const navigate = useNavigate();
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000/api";
 
   const getToken = () => localStorage.getItem("admin_token");
   const getAdminInfo = () => {
     const info = localStorage.getItem("admin_info");
     return info ? JSON.parse(info) : null;
+  };
+
+  const getErrorMessage = (err, fallback = "Network error. Please try again.") => {
+    if (!err) return fallback;
+    const message = err.message || String(err);
+    if (
+      message.includes("Failed to fetch") ||
+      message.includes("NetworkError") ||
+      message.includes("Network request failed") ||
+      message.includes("fetch")
+    ) {
+      return "Cannot reach the backend server. Please start the backend and refresh the page.";
+    }
+    return fallback;
   };
 
   useEffect(() => {
@@ -34,7 +48,7 @@ const AdminDashboard = () => {
     fetchSubmissions();
     fetchPayments();
     fetchDiocesan();
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     initScrollAnimations();
@@ -43,9 +57,15 @@ const AdminDashboard = () => {
   const fetchSubmissions = async () => {
     try {
       setLoading(true);
+      const token = getToken();
+      if (!token) {
+        navigate("/admin/login");
+        return;
+      }
+
       const response = await fetch(`${API_URL}/admin/submissions`, {
         headers: {
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -63,7 +83,7 @@ const AdminDashboard = () => {
       setSubmissions(data.data || []);
       setError("");
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err, "Unable to load submissions. Please check the backend and refresh the page."));
       console.error("Fetch error:", err);
     } finally {
       setLoading(false);
@@ -72,9 +92,15 @@ const AdminDashboard = () => {
 
   const fetchPayments = async () => {
     try {
+      const token = getToken();
+      if (!token) {
+        navigate("/admin/login");
+        return;
+      }
+
       const response = await fetch(`${API_URL}/payment/all`, {
         headers: {
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -91,15 +117,23 @@ const AdminDashboard = () => {
       const data = await response.json();
       setPayments(data.data || []);
     } catch (err) {
+      const message = getErrorMessage(err, "Unable to load payment records right now.");
+      setError(message);
       console.error("Fetch payments error:", err);
     }
   };
 
   const fetchDiocesan = async () => {
     try {
+      const token = getToken();
+      if (!token) {
+        navigate("/admin/login");
+        return;
+      }
+
       const response = await fetch(`${API_URL}/diocesan/`, {
         headers: {
-          Authorization: `Bearer ${getToken()}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -111,6 +145,8 @@ const AdminDashboard = () => {
       const data = await response.json();
       setDiocesan(data.data || []);
     } catch (err) {
+      const message = getErrorMessage(err, "Unable to load diocesan accounts right now.");
+      setError(message);
       console.error("Fetch diocesan error:", err);
     }
   };
