@@ -81,6 +81,7 @@ const Form = () => {
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isReviewMode, setIsReviewMode] = useState(false);
 
   useEffect(() => {
     if (selectedDenary && data[selectedDenary]) {
@@ -127,6 +128,74 @@ const Form = () => {
     setErrors({});
   };
 
+  const handleEditReview = () => {
+    setIsReviewMode(false);
+    setServerError("");
+  };
+
+  const handleFinalSubmit = async () => {
+    setLoading(true);
+    setServerError("");
+    setSuccessMessage("");
+
+    try {
+      const response = await fetch(`${API_URL}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          denary: selectedDenary,
+          parish: selectedParish,
+          ...formData,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setServerError(data.message || "Failed to submit form");
+        return;
+      }
+
+      // Store registration ID for payment
+      const registrationId = data.id;
+      localStorage.setItem('pendingRegistrationId', registrationId);
+
+      const result = {
+        id: registrationId,
+        denary: selectedDenary,
+        parish: selectedParish,
+        ...formData,
+      };
+      setSubmittedData(result);
+      setSuccessMessage("Registration submitted successfully! Please proceed to payment.");
+      setIsReviewMode(false);
+
+      // Redirect to payment after a short delay
+      const timerId = setTimeout(() => {
+        window.location.href = `/payment?registrationId=${registrationId}`;
+      }, 2000);
+      setRedirectTimeoutId(timerId);
+
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        address: "",
+        occupation: "",
+      });
+      setSelectedDenary("");
+      setSelectedParish("");
+      setParishes([]);
+    } catch (error) {
+      setServerError("Network error. Please try again.");
+      console.error("Submission error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const validateForm = () => {
     let newErrors = {};
     if (!formData.name.trim()) newErrors.name = "Name is required";
@@ -146,65 +215,8 @@ const Form = () => {
 
   const handleSubmit = async () => {
     if (validateForm()) {
-      setLoading(true);
+      setIsReviewMode(true);
       setServerError("");
-      setSuccessMessage("");
-
-      try {
-        const response = await fetch(`${API_URL}/register`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            denary: selectedDenary,
-            parish: selectedParish,
-            ...formData,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          setServerError(data.message || "Failed to submit form");
-          return;
-        }
-
-        // Store registration ID for payment
-        const registrationId = data.id;
-        localStorage.setItem('pendingRegistrationId', registrationId);
-
-        const result = {
-          id: registrationId,
-          denary: selectedDenary,
-          parish: selectedParish,
-          ...formData,
-        };
-        setSubmittedData(result);
-        setSuccessMessage("Registration submitted successfully! Please proceed to payment.");
-
-        // Redirect to payment after a short delay
-        const timerId = setTimeout(() => {
-          window.location.href = `/payment?registrationId=${registrationId}`;
-        }, 2000);
-        setRedirectTimeoutId(timerId);
-
-        setFormData({
-          name: "",
-          phone: "",
-          email: "",
-          address: "",
-          occupation: "",
-        });
-        setSelectedDenary("");
-        setSelectedParish("");
-        setParishes([]);
-      } catch (error) {
-        setServerError("Network error. Please try again.");
-        console.error("Submission error:", error);
-      } finally {
-        setLoading(false);
-      }
     }
   };
 
@@ -287,6 +299,38 @@ const Form = () => {
               {loading ? "Submitting..." : "Submit"}
             </button>
           </div>
+
+          {isReviewMode && (
+            <div className="mt-6 p-4 bg-blue-100 border border-blue-600 rounded-xl w-full animate-in">
+              <h3 className="text-xl font-bold text-blue-800 mb-4">Review Your Information</h3>
+              <ol className="mt-3 text-gray-800 text-lg space-y-2">
+                <li><strong>Denary:</strong> {selectedDenary}</li>
+                <li><strong>Parish:</strong> {selectedParish}</li>
+                <li><strong>Name:</strong> {formData.name}</li>
+                <li><strong>Phone:</strong> {formData.phone}</li>
+                <li><strong>Email:</strong> {formData.email}</li>
+                <li><strong>Address:</strong> {formData.address}</li>
+                <li><strong>Occupation:</strong> {formData.occupation}</li>
+              </ol>
+              <div className="flex gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={handleEditReview}
+                  className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-2xl hover:bg-yellow-400 transition-colors duration-200 font-semibold"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={handleFinalSubmit}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-green-800 text-white rounded-2xl hover:bg-green-600 transition-colors duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? "Submitting..." : "Submit"}
+                </button>
+              </div>
+            </div>
+          )}
 
           {submittedData && (
             <div className="mt-6 p-4 bg-green-100 border border-green-600 rounded-xl w-full animate-in">
