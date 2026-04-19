@@ -13,11 +13,11 @@ const Form = () => {
     kofai: [
       "St. Peter Nukkai",
       "Holy Family Kofai",
-      "St Athanesius Iware",
-      "St. John Jebanbu",
+      "St Athanasius Iware",
+      "St. John the Baptist Janebanbu",
       "St. Thomas Aquinas Chaplaincy",
-      "St. Stephen Sunkani",
-      "St.Peter Jauroyino",
+      "St. Gabriel Sunkani",
+      "St.Peter chaplaincy Jauro Yino",
     ],
     jalingo: [
       "St. Joseph Mayo-gwoi",
@@ -38,6 +38,7 @@ const Form = () => {
       "St. John Parish Kpantisawa",
       "St. Peter Pupule",
       "St. Theresa Mika pastoral",
+      "St. Thesesa of the child Jesus",
     ],
     yakoko: [
       "St. Monica's yakoko",
@@ -48,12 +49,15 @@ const Form = () => {
       "St Patrick kpanti Napoo",
       "Our lady queen of peace cathedral",
       "St Ann negatavah",
-      "Pastoral Area",
+      "Pastoral Area Dinya",
+      "Patoral area Orga",
       "St Peter Abuja phase 1",
       "St Justina mayo Dassa",
       "St John Paul de second gulom",
       "Church of Assumption Kona",
+      ""
     ],
+    
     mutumbiyu: [
       "St John Mutum-biyu",
       "St Paul Tella",
@@ -63,6 +67,13 @@ const Form = () => {
       "St Mathew Dan Anacha"
 
     ],
+   karimlamido: [
+      "St Joseph Lau",
+      "Holy Family Karim Lamido",
+      "St Patrick Jen Pastoral area",
+      "St Theresa Kunini",
+      "St John Bosko Chaplaincy Jimlari",
+    ]
   };
 
   const [selectedDenary, setSelectedDenary] = useState("");
@@ -145,7 +156,7 @@ const Form = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          denary: selectedDenary,
+          deanery: selectedDenary,
           parish: selectedParish,
           ...formData,
         }),
@@ -164,7 +175,7 @@ const Form = () => {
 
       const result = {
         id: registrationId,
-        denary: selectedDenary,
+        deanery: selectedDenary,
         parish: selectedParish,
         ...formData,
       };
@@ -250,7 +261,7 @@ const Form = () => {
               <option value="olqp">OLQP</option>
               <option value="mutumbiyu">Mutum-Biyu</option>
             </select>
-            {errors.denary && <p className="text-red-600 text-sm ml-2">{errors.denary}</p>}
+            {errors.deanery && <p className="text-red-600 text-sm ml-2">{errors.denary}</p>}
 
             <select
               id="parish"

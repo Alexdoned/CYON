@@ -123,7 +123,7 @@ const Home = () => {
         <div className="max-w-6xl mx-auto">
           <AnimatedSection animation="animate-on-scroll">
             <h2 className="text-4xl font-bold text-center text-green-800 mb-16">
-              Our Denaries
+              Our Deaneries
             </h2>
           </AnimatedSection>
 
@@ -135,8 +135,9 @@ const Home = () => {
               "Zing",
               "Kpantisawa",
               "Yakoko",
-              "Our Lady Queen Of Peace Cathedral",
+              "Our Lady Queen Of Peace",
               "Mutum-biyu",
+              "Karim-Lamido",
             ].map((denary, index) => (
               <AnimatedSection
                 key={denary}
