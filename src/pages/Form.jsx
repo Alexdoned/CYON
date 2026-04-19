@@ -73,7 +73,7 @@ const Form = () => {
       "St Patrick Jen Pastoral area",
       "St Theresa Kunini",
       "St John Bosko Chaplaincy Jimlari",
-    ]
+    ],
   };
 
   const [selectedDenary, setSelectedDenary] = useState("");
@@ -156,7 +156,7 @@ const Form = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          deanery: selectedDenary,
+          denary: selectedDenary,
           parish: selectedParish,
           ...formData,
         }),
@@ -175,7 +175,7 @@ const Form = () => {
 
       const result = {
         id: registrationId,
-        deanery: selectedDenary,
+        denary: selectedDenary,
         parish: selectedParish,
         ...formData,
       };
@@ -217,7 +217,7 @@ const Form = () => {
     if (!formData.address.trim()) newErrors.address = "Address is required";
     if (!formData.occupation.trim())
       newErrors.occupation = "Occupation is required";
-    if (!selectedDenary) newErrors.deanery = "Choose a denary";
+    if (!selectedDenary) newErrors.denary = "Choose a denary";
     if (!selectedParish) newErrors.parish = "Choose a parish";
 
     setErrors(newErrors);
@@ -246,9 +246,9 @@ const Form = () => {
 
           <div className="flex flex-col w-full">
             <select
-              id="deanery"
+              id="denary"
               value={selectedDenary}
-              onChange={handleDeaneryChange}
+              onChange={handleDenaryChange}
               className="p-2 m-2 rounded-2xl border-2 border-green-800 focus:outline-none focus:ring-2 focus:ring-green-600"
             >
               <option value="">Choose Deanery</option>
@@ -258,10 +258,10 @@ const Form = () => {
               <option value="zing">Zing</option>
               <option value="kpantisawa">Kpantisawa</option>
               <option value="yakoko">Yakoko</option>
-              <option value="olqp">OLQP</option>
+              <option value="olqp">Our Lady Queen of Peace</option>
               <option value="mutumbiyu">Mutum-Biyu</option>
             </select>
-            {errors.deanery && <p className="text-red-600 text-sm ml-2">{errors.deanery}</p>}
+            {errors.denary && <p className="text-red-600 text-sm ml-2">{errors.denary}</p>}
 
             <select
               id="parish"
@@ -315,7 +315,7 @@ const Form = () => {
             <div className="mt-6 p-4 bg-blue-100 border border-blue-600 rounded-xl w-full animate-in">
               <h3 className="text-xl font-bold text-blue-800 mb-4">Review Your Information</h3>
               <ol className="mt-3 text-gray-800 text-lg space-y-2">
-                <li><strong>Deanery:</strong> {selectedDenary}</li>
+                <li><strong>Denary:</strong> {selectedDenary}</li>
                 <li><strong>Parish:</strong> {selectedParish}</li>
                 <li><strong>Name:</strong> {formData.name}</li>
                 <li><strong>Phone:</strong> {formData.phone}</li>
@@ -348,7 +348,7 @@ const Form = () => {
               <h3 className="text-xl font-bold text-green-800">Form Submitted Successfully!</h3>
               <p className="text-green-700 text-sm mt-2">{successMessage}</p>
               <ol className="mt-3 text-gray-800 text-lg space-y-2">
-                <li><strong>Denary:</strong> {submittedData.deanery}</li>
+                <li><strong>Denary:</strong> {submittedData.denary}</li>
                 <li><strong>Parish:</strong> {submittedData.parish}</li>
                 <li><strong>Name:</strong> {submittedData.name}</li>
                 <li><strong>Phone:</strong> {submittedData.phone}</li>

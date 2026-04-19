@@ -137,16 +137,16 @@ const Home = () => {
               "Yakoko",
               "Our Lady Queen Of Peace",
               "Mutum-biyu",
-              "Karim-Lamido",
-            ].map((deanery, index) => (
+              "Karim-lamido"
+            ].map((denary, index) => (
               <AnimatedSection
-                key={deanery}
+                key={denary}
                 animation="animate-on-scroll-scale"
                 className={`animate-stagger-${(index % 8) + 1}`}
               >
                 <div className="p-6 bg-white rounded-lg shadow hover-lift text-center">
                   <h3 className="text-lg font-bold text-green-800">{denary}</h3>
-                  <p className="text-gray-600 text-sm mt-2">Denary</p>
+                  <p className="text-gray-600 text-sm mt-2">Deanery</p>
                 </div>
               </AnimatedSection>
             ))}

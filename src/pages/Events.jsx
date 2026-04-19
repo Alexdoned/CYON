@@ -10,7 +10,7 @@ const Events = () => {
   const [uploadForm, setUploadForm] = useState({
     title: '',
     description: '',
-    denary: '',
+    deanery: '',
     parish: '',
     eventDate: '',
     mediaType: 'image',
@@ -102,7 +102,7 @@ const Events = () => {
       const formData = new FormData();
       formData.append('title', uploadForm.title);
       formData.append('description', uploadForm.description);
-      formData.append('denary', uploadForm.deanery);
+      formData.append('deanery', uploadForm.deanery);
       formData.append('parish', uploadForm.parish);
       formData.append('eventDate', uploadForm.eventDate);
       // In production, you might want to get user ID from authentication
@@ -202,7 +202,7 @@ const Events = () => {
                       name="title"
                       value={uploadForm.title}
                       onChange={handleInputChange}
-                      placeholder="e.g., Bali Denary Convention 2024"
+                      placeholder="e.g., Bali Deanery Convention 2024"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                       required
                     />
@@ -249,7 +249,7 @@ const Events = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                       required
                     >
-                      <option value="">Choose Denary</option>
+                      <option value="">Choose Deanery</option>
                       <option value="bali">Bali</option>
                       <option value="kofai">Kofai</option>
                       <option value="jalingo">Jalingo</option>
@@ -373,7 +373,7 @@ const Events = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
-                      {event.denary}
+                      {event.deanery}
                     </div>
                   </div>
                 </div>
