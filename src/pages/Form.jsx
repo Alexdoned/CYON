@@ -67,12 +67,12 @@ const Form = () => {
       "St Mathew Dan Anacha"
 
     ],
-   karimlamido: [
+   karim: [
       "St Joseph Lau",
       "Holy Family Karim Lamido",
       "St Patrick Jen Pastoral area",
       "St Theresa Kunini",
-      "St John Bosko Chaplaincy Jimlari",
+      "St John Bosko Chaplaincy Jimlari"
     ],
   };
 
@@ -260,6 +260,7 @@ const Form = () => {
               <option value="yakoko">Yakoko</option>
               <option value="olqp">Our Lady Queen of Peace</option>
               <option value="mutumbiyu">Mutum-Biyu</option>
+              <option value="karim">Karim-Lamido</option>
             </select>
             {errors.denary && <p className="text-red-600 text-sm ml-2">{errors.denary}</p>}
 
