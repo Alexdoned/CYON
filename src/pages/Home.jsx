@@ -146,7 +146,7 @@ const Home = () => {
               >
                 <div className="p-6 bg-white rounded-lg shadow hover-lift text-center">
                   <h3 className="text-lg font-bold text-green-800">{denary}</h3>
-                  <p className="text-gray-600 text-sm mt-2">Deanery</p>
+                  <p className="text-gray-800 text-sm mt-2">Deanery</p>
                 </div>
               </AnimatedSection>
             ))}
