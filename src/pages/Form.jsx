@@ -49,8 +49,7 @@ const Form = () => {
       "St Patrick kpanti Napoo",
       "Our lady queen of peace cathedral",
       "St Ann negatavah",
-      "Pastoral Area Dinya",
-      "Patoral area Orga",
+      "Pastoral Area",
       "St Peter Abuja phase 1",
       "St Justina mayo Dassa",
       "St John Paul de second gulom",
@@ -62,9 +61,12 @@ const Form = () => {
       "St John Mutum-biyu",
       "St Paul Tella",
       "St Parick Sabongida",
-      "St Monica Nam-nail",
+      "St Monica Namnail",
       "St Denis Pena",
-      "St Mathew Dan Anacha"
+      "St Mathew Dan Anacha",
+      "Pastoral area Dinya",
+      "Pastoral area Orga",
+
 
     ],
    karim: [
@@ -72,7 +74,7 @@ const Form = () => {
       "Holy Family Karim Lamido",
       "St Patrick Jen Pastoral area",
       "St Theresa Kunini",
-      "St John Bosko Chaplaincy Jimlari"
+      "St John Bosko Chaplaincy Jimlari",
     ],
   };
 
