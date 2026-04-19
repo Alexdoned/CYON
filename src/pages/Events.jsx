@@ -25,7 +25,7 @@ const Events = () => {
       id: 1,
       title: "Bali Denary Convention 2024",
       description: "Annual convention bringing together youth from all Bali parishes",
-      denary: "Bali",
+      deanery: "Bali",
       parish: "All Parishes",
       eventDate: "2024-03-15",
       media: [
@@ -39,7 +39,7 @@ const Events = () => {
       id: 2,
       title: "St. Paul Bali Parish Youth Meeting",
       description: "Monthly youth fellowship and prayer meeting",
-      denary: "Bali",
+      deanery: "Bali",
       parish: "St. Paul Bali",
       eventDate: "2024-03-10",
       media: [
@@ -102,7 +102,7 @@ const Events = () => {
       const formData = new FormData();
       formData.append('title', uploadForm.title);
       formData.append('description', uploadForm.description);
-      formData.append('denary', uploadForm.denary);
+      formData.append('denary', uploadForm.deanery);
       formData.append('parish', uploadForm.parish);
       formData.append('eventDate', uploadForm.eventDate);
       // In production, you might want to get user ID from authentication
@@ -126,7 +126,7 @@ const Events = () => {
         setUploadForm({
           title: '',
           description: '',
-          denary: '',
+          deanery: '',
           parish: '',
           eventDate: '',
           mediaType: 'image',
@@ -155,7 +155,8 @@ const Events = () => {
     zing: ["St. Thomas", "St. Patrick Tudun wada", "St. Stephen Bitako Yali"],
     kpantisawa: ["St. John Parish Kpantisawa", "St. Peter Pupule", "St. Theresa Mika"],
     yakoko: ["St. Monica's yakoko", "All Saints Lamma", "St. Peter Monkin"],
-    olqp: ["St Patrick kpanti Napoo", "Our lady queen of peace cathedral", "St Ann negatavah"],
+    olqp: ["St Patrick kpanti Napoo", "Our lady queen of peace ", "St Ann negatavah"],
+    karimlamido: [ "St Joseph Lau", "Holy Family Karim Lamido", "St Patrick Jen Pastoral area", "St Theresa Kunini", "St John Bosko Chaplaincy Jimlari",],
     mutumbiyu: ["All Parishes"]
   };
 
@@ -239,7 +240,7 @@ const Events = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Denary *
+                      Deanery *
                     </label>
                     <select
                       name="denary"
@@ -255,7 +256,7 @@ const Events = () => {
                       <option value="zing">Zing</option>
                       <option value="kpantisawa">Kpantisawa</option>
                       <option value="yakoko">Yakoko</option>
-                      <option value="olqp">OLQP</option>
+                      <option value="olqp">Our Lady Queen of Peace</option>
                       <option value="mutumbiyu">Mutum-Biyu</option>
                     </select>
                   </div>
@@ -268,11 +269,11 @@ const Events = () => {
                       name="parish"
                       value={uploadForm.parish}
                       onChange={handleInputChange}
-                      disabled={!uploadForm.denary}
+                      disabled={!uploadForm.deanery}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                     >
                       <option value="">Choose Parish</option>
-                      {uploadForm.denary && parishes[uploadForm.denary]?.map((parish) => (
+                      {uploadForm.deanery && parishes[uploadForm.deanery]?.map((parish) => (
                         <option key={parish} value={parish}>{parish}</option>
                       ))}
                     </select>

@@ -22,14 +22,14 @@ const Leaders = () => {
   const sampleLeaders = [
     {
       id: 1,
-      name: "John Aminu",
+      name: "John Alex",
       year: "2023",
       achievement: "Outstanding Youth Leader - Bali Denary",
       photo: '/api/placeholder/300/300'
     },
     {
       id: 2,
-      name: "Mary Okonkwo",
+      name: "Mary Anthony",
       year: "2024",
       achievement: "Community Service Excellence - Jalingo Diocese",
       photo: '/api/placeholder/300/300'
