@@ -138,9 +138,9 @@ const Home = () => {
               "Our Lady Queen Of Peace",
               "Mutum-biyu",
               "Karim-Lamido",
-            ].map((denary, index) => (
+            ].map((deanery, index) => (
               <AnimatedSection
-                key={denary}
+                key={deanery}
                 animation="animate-on-scroll-scale"
                 className={`animate-stagger-${(index % 8) + 1}`}
               >
