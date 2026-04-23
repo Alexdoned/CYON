@@ -25,10 +25,18 @@ const AdminLogin = () => {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await response.json();
+      let data;
+      let responseBody = null;
+      try {
+        responseBody = await response.json();
+      } catch (parseError) {
+        responseBody = await response.text();
+      }
+
+      data = typeof responseBody === 'string' ? { message: responseBody } : responseBody;
 
       if (!response.ok) {
-        setError(data.message || "Login failed");
+        setError(data?.message || "Login failed");
         return;
       }
 

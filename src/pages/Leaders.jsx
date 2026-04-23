@@ -7,6 +7,7 @@ const Leaders = () => {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [editingLeader, setEditingLeader] = useState(null);
   const [uploadForm, setUploadForm] = useState({
     name: '',
     year: new Date().getFullYear().toString(),
@@ -17,6 +18,24 @@ const Leaders = () => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
   const getAdminToken = () => localStorage.getItem("admin_token");
+
+  const parseResponseError = async (response) => {
+    let message = `Request failed with status ${response.status}`;
+    try {
+      const data = await response.json();
+      if (data?.message) {
+        message = data.message;
+      } else if (typeof data === "string" && data.trim().length > 0) {
+        message = data;
+      }
+    } catch (jsonError) {
+      const text = await response.text();
+      if (text && text.trim().length > 0) {
+        message = text;
+      }
+    }
+    return message;
+  };
 
   // Sample leaders data
   const sampleLeaders = [
@@ -49,6 +68,8 @@ const Leaders = () => {
         const data = await response.json();
         setLeaders(data.data || []);
       } else {
+        const errorMessage = await parseResponseError(response);
+        console.error('Error fetching leaders:', errorMessage);
         setLeaders(sampleLeaders);
       }
     } catch (error) {
@@ -76,8 +97,18 @@ const Leaders = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!uploadForm.name || !uploadForm.year || !uploadForm.achievement || !uploadForm.photoFile) {
-      alert('Please fill in all fields and select a photo');
+    if (!isAdmin) {
+      alert('Admin access required to manage leader profiles.');
+      return;
+    }
+
+    if (!uploadForm.name || !uploadForm.year || !uploadForm.achievement) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    if (!editingLeader && !uploadForm.photoFile) {
+      alert('Please select a photo');
       return;
     }
 
@@ -88,17 +119,22 @@ const Leaders = () => {
       formData.append('name', uploadForm.name);
       formData.append('year', uploadForm.year);
       formData.append('achievement', uploadForm.achievement);
-      formData.append('photo', uploadForm.photoFile);
+      if (uploadForm.photoFile) {
+        formData.append('photo', uploadForm.photoFile);
+      }
 
       const token = getAdminToken();
       if (!token) {
-        alert('You must be logged in as an admin to add a leader.');
+        alert('You must be logged in as an admin to manage leaders.');
         setIsProcessing(false);
         return;
       }
 
-      const response = await fetch(`${API_URL}/leaders`, {
-        method: 'POST',
+      const url = editingLeader ? `${API_URL}/leaders/${editingLeader.id}` : `${API_URL}/leaders`;
+      const method = editingLeader ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           Authorization: `Bearer ${token}`
         },
@@ -107,7 +143,7 @@ const Leaders = () => {
 
       if (response.ok) {
         const result = await response.json();
-        alert('Leader profile added successfully!');
+        alert(`Leader profile ${editingLeader ? 'updated' : 'added'} successfully!`);
 
         // Reset form
         setUploadForm({
@@ -117,22 +153,28 @@ const Leaders = () => {
           photoFile: null
         });
         setShowUploadForm(false);
+        setEditingLeader(null);
 
         // Refresh leaders list
         fetchLeaders();
       } else {
-        const error = await response.json();
-        alert(`Upload failed: ${error.message}`);
+        const errorMessage = await parseResponseError(response);
+        alert(`${editingLeader ? 'Update' : 'Upload'} failed: ${errorMessage}`);
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      alert('Upload failed. Please try again.');
+      console.error(`${editingLeader ? 'Update' : 'Upload'} error:`, error);
+      alert(`${editingLeader ? 'Update' : 'Upload'} failed. Please try again.`);
     } finally {
       setIsProcessing(false);
     }
   };
 
   const handleDelete = async (leaderId) => {
+    if (!isAdmin) {
+      alert('Admin access required to delete leader profiles.');
+      return;
+    }
+
     if (!window.confirm('Are you sure you want to delete this leader profile?')) {
       return;
     }
@@ -155,12 +197,40 @@ const Leaders = () => {
         alert('Leader profile deleted successfully');
         fetchLeaders();
       } else {
-        alert('Failed to delete leader profile');
+        const errorMessage = await parseResponseError(response);
+        alert(`Failed to delete leader profile: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Delete error:', error);
       alert('Delete failed. Please try again.');
     }
+  };
+
+  const handleEdit = (leader) => {
+    if (!isAdmin) {
+      alert('Admin access required to edit leader profiles.');
+      return;
+    }
+
+    setEditingLeader(leader);
+    setUploadForm({
+      name: leader.name,
+      year: leader.year.toString(),
+      achievement: leader.achievement,
+      photoFile: null
+    });
+    setShowUploadForm(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingLeader(null);
+    setUploadForm({
+      name: '',
+      year: new Date().getFullYear().toString(),
+      achievement: '',
+      photoFile: null
+    });
+    setShowUploadForm(false);
   };
 
   return (
@@ -196,10 +266,12 @@ const Leaders = () => {
         </div>
 
         {/* Upload Form */}
-        {showUploadForm && (
+        {showUploadForm && isAdmin && (
           <AnimatedSection animation="animate-on-scroll-scale">
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-green-800 mb-6">Add Leader Profile</h2>
+              <h2 className="text-2xl font-bold text-green-800 mb-6">
+                {editingLeader ? 'Edit Leader Profile' : 'Add Leader Profile'}
+              </h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -251,17 +323,17 @@ const Leaders = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Leader Photo *
+                    Leader Photo {editingLeader ? '(Optional - leave empty to keep current photo)' : '*'}
                   </label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    required
+                    required={!editingLeader}
                   />
                   <p className="text-sm text-gray-500 mt-1">
-                    Select a photo (JPG, PNG, etc.)
+                    Select a photo (JPG, PNG, etc.) {editingLeader ? '- Optional when editing' : ''}
                   </p>
                 </div>
 
@@ -271,11 +343,11 @@ const Leaders = () => {
                     disabled={isProcessing}
                     className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isProcessing ? 'Adding...' : 'Add Leader'}
+                    {isProcessing ? (editingLeader ? 'Updating...' : 'Adding...') : (editingLeader ? 'Update Leader' : 'Add Leader')}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowUploadForm(false)}
+                    onClick={editingLeader ? handleCancelEdit : () => setShowUploadForm(false)}
                     disabled={isProcessing}
                     className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -310,9 +382,15 @@ const Leaders = () => {
                   <h3 className="text-xl font-bold text-green-800 mb-2">{leader.name}</h3>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-3">{leader.achievement}</p>
 
-                  {/* Delete Button - only visible to admin */}
+                  {/* Edit and Delete Buttons - only visible to admin */}
                   {isAdmin && (
                     <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(leader)}
+                        className="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-3 py-2 rounded hover:bg-blue-100 transition-colors text-sm"
+                      >
+                        Edit
+                      </button>
                       <button
                         onClick={() => handleDelete(leader.id)}
                         className="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded hover:bg-red-100 transition-colors text-sm"

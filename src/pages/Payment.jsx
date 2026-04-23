@@ -159,7 +159,7 @@ const Payment = () => {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-gray-700">Registration Fee</span>
-                    <span className="font-semibold text-gray-900">$50.00</span>
+                    <span className="font-semibold text-gray-900">&#8358;100.00</span>
                   </div>
                 </div>
               </div>
@@ -347,7 +347,7 @@ const Payment = () => {
                     ) : (
                       <>
                         <Shield className="w-4 h-4" />
-                        Pay $50.00
+                        Pay &#8358;100.00
                       </>
                     )}
                   </button>

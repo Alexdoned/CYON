@@ -7,6 +7,8 @@ const Events = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
   const [uploadForm, setUploadForm] = useState({
     title: '',
     description: '',
@@ -18,6 +20,8 @@ const Events = () => {
   });
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+  const getAdminToken = () => localStorage.getItem("admin_token");
 
   // Sample events data - in production this would come from API
   const sampleEvents = [
@@ -53,6 +57,7 @@ const Events = () => {
   useEffect(() => {
     initScrollAnimations();
     fetchEvents();
+    setIsAdmin(!!getAdminToken());
   }, []);
 
   const fetchEvents = async () => {
@@ -91,7 +96,12 @@ const Events = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (uploadForm.mediaFiles.length === 0) {
+    if (!isAdmin) {
+      alert('Admin access required to manage events.');
+      return;
+    }
+
+    if (!editingEvent && uploadForm.mediaFiles.length === 0) {
       alert('Please select at least one media file');
       return;
     }
@@ -102,25 +112,38 @@ const Events = () => {
       const formData = new FormData();
       formData.append('title', uploadForm.title);
       formData.append('description', uploadForm.description);
-      formData.append('deanery', uploadForm.deanery);
+      formData.append('denary', uploadForm.deanery);
       formData.append('parish', uploadForm.parish);
       formData.append('eventDate', uploadForm.eventDate);
-      // In production, you might want to get user ID from authentication
-      // formData.append('uploadedBy', '1'); // Placeholder user ID - commented out for now
 
-      // Add media files
-      uploadForm.mediaFiles.forEach((file, index) => {
-        formData.append('media', file);
-      });
+      // Add media files (only for new events or when adding new media)
+      if (uploadForm.mediaFiles.length > 0) {
+        uploadForm.mediaFiles.forEach((file, index) => {
+          formData.append('media', file);
+        });
+      }
 
-      const response = await fetch(`${API_URL}/events`, {
-        method: 'POST',
+      const token = getAdminToken();
+      if (!token) {
+        alert('You must be logged in as an admin to manage events.');
+        setIsProcessing(false);
+        return;
+      }
+
+      const url = editingEvent ? `${API_URL}/events/${editingEvent.id}` : `${API_URL}/events`;
+      const method = editingEvent ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
         body: formData
       });
 
       if (response.ok) {
         const result = await response.json();
-        alert('Event uploaded successfully!');
+        alert(`Event ${editingEvent ? 'updated' : 'uploaded'} successfully!`);
 
         // Reset form
         setUploadForm({
@@ -133,18 +156,97 @@ const Events = () => {
           mediaFiles: []
         });
         setShowUploadForm(false);
+        setEditingEvent(null);
 
         // Refresh events list
         fetchEvents();
       } else {
-        const error = await response.json();
-        alert(`Upload failed: ${error.message}`);
+        let errorMessage = 'Upload failed. Please try again.';
+        try {
+          const error = await response.json();
+          errorMessage = error.message || errorMessage;
+          console.error('Event upload failed:', response.status, error);
+        } catch (jsonError) {
+          const text = await response.text();
+          errorMessage = text || errorMessage;
+          console.error('Event upload failed with non-JSON response:', response.status, text, jsonError);
+        }
+        alert(`${editingEvent ? 'Update' : 'Upload'} failed: ${errorMessage}`);
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      alert('Upload failed. Please try again.');
+      console.error(`${editingEvent ? 'Update' : 'Upload'} error:`, error);
+      alert(`${editingEvent ? 'Update' : 'Upload'} failed. Please try again.`);
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleEdit = (event) => {
+    if (!isAdmin) {
+      alert('Admin access required to edit events.');
+      return;
+    }
+
+    setEditingEvent(event);
+    setUploadForm({
+      title: event.title,
+      description: event.description || '',
+      deanery: event.denary || event.deanery || '',
+      parish: event.parish || '',
+      eventDate: event.event_date ? event.event_date.split('T')[0] : (event.eventDate || ''),
+      mediaType: 'image',
+      mediaFiles: []
+    });
+    setShowUploadForm(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingEvent(null);
+    setUploadForm({
+      title: '',
+      description: '',
+      deanery: '',
+      parish: '',
+      eventDate: '',
+      mediaType: 'image',
+      mediaFiles: []
+    });
+    setShowUploadForm(false);
+  };
+
+  const handleDelete = async (eventId) => {
+    if (!isAdmin) {
+      alert('Admin access required to delete events.');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this event and all its media?')) {
+      return;
+    }
+
+    try {
+      const token = getAdminToken();
+      if (!token) {
+        alert('You must be logged in as an admin to delete events.');
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/events/${eventId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        alert('Event deleted successfully');
+        fetchEvents();
+      } else {
+        alert('Failed to delete event');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Delete failed. Please try again.');
     }
   };
 
@@ -177,20 +279,28 @@ const Events = () => {
 
         {/* Upload Button */}
         <div className="mb-8 text-center">
-          <button
-            onClick={() => setShowUploadForm(!showUploadForm)}
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2 mx-auto"
-          >
-            <Upload className="w-5 h-5" />
-            Share Event Photos/Videos
-          </button>
+          {isAdmin ? (
+            <button
+              onClick={() => setShowUploadForm(!showUploadForm)}
+              className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 flex items-center gap-2 mx-auto"
+            >
+              <Upload className="w-5 h-5" />
+              {editingEvent ? 'Edit Event' : 'Share Events'}
+            </button>
+          ) : (
+            <p className="text-sm text-gray-600 mx-auto max-w-xl">
+              Event upload and management is restricted to administrators. Please log in as admin to add, edit, or delete events.
+            </p>
+          )}
         </div>
 
         {/* Upload Form */}
-        {showUploadForm && (
+        {showUploadForm && isAdmin && (
           <AnimatedSection animation="animate-on-scroll-scale">
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-green-800 mb-6">Upload Event Media</h2>
+              <h2 className="text-2xl font-bold text-green-800 mb-6">
+                {editingEvent ? 'Edit Event' : 'Upload Event Media'}
+              </h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
@@ -243,8 +353,8 @@ const Events = () => {
                       Deanery *
                     </label>
                     <select
-                      name="denary"
-                      value={uploadForm.denary}
+                      name="deanery"
+                      value={uploadForm.deanery}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                       required
@@ -318,7 +428,7 @@ const Events = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Upload {uploadForm.mediaType === 'image' ? 'Photos' : 'Videos'} *
+                    Upload {uploadForm.mediaType === 'image' ? 'Photos' : 'Videos'} {editingEvent ? '(Optional)' : '*'}
                   </label>
                   <input
                     type="file"
@@ -326,13 +436,13 @@ const Events = () => {
                     accept={uploadForm.mediaType === 'image' ? 'image/*' : 'video/*'}
                     onChange={handleFileChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    required
+                    required={!editingEvent}
                   />
                   <p className="text-sm text-gray-500 mt-1">
                     {uploadForm.mediaType === 'image'
                       ? 'Select multiple photos (JPG, PNG, etc.)'
                       : 'Select videos (MP4, MOV, etc.)'
-                    }
+                    } {editingEvent ? '- Optional when editing' : ''}
                   </p>
                 </div>
 
@@ -342,11 +452,11 @@ const Events = () => {
                     disabled={isProcessing}
                     className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isProcessing ? 'Uploading...' : 'Upload Event'}
+                    {isProcessing ? (editingEvent ? 'Updating...' : 'Uploading...') : (editingEvent ? 'Update Event' : 'Upload Event')}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowUploadForm(false)}
+                    onClick={editingEvent ? handleCancelEdit : () => setShowUploadForm(false)}
                     disabled={isProcessing}
                     className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -373,7 +483,7 @@ const Events = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
-                      {event.deanery}
+                      {event.denary || event.deanery}
                     </div>
                   </div>
                 </div>
@@ -408,6 +518,24 @@ const Events = () => {
                     <span>By {event.uploader_name || event.uploadedBy || 'Community'}</span>
                     <span>{event.media?.length || 0} media files</span>
                   </div>
+
+                  {/* Admin Controls */}
+                  {isAdmin && (
+                    <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
+                      <button
+                        onClick={() => handleEdit(event)}
+                        className="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-3 py-2 rounded hover:bg-blue-100 transition-colors text-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(event.id)}
+                        className="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded hover:bg-red-100 transition-colors text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </AnimatedSection>

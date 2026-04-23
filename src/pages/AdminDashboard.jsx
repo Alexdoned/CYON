@@ -14,6 +14,9 @@ const AdminDashboard = () => {
   const [editingDiocesan, setEditingDiocesan] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [activeTab, setActiveTab] = useState('registrations');
+  const [currentPageRegistrations, setCurrentPageRegistrations] = useState(1);
+  const [currentPagePayments, setCurrentPagePayments] = useState(1);
+  const itemsPerPage = 10;
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000/api";
@@ -22,6 +25,24 @@ const AdminDashboard = () => {
   const getAdminInfo = () => {
     const info = localStorage.getItem("admin_info");
     return info ? JSON.parse(info) : null;
+  };
+
+  const parseResponseError = async (response) => {
+    let message = `Request failed with status ${response.status}`;
+    try {
+      const data = await response.json();
+      if (data?.message) {
+        message = data.message;
+      } else if (typeof data === "string" && data.trim().length > 0) {
+        message = data;
+      }
+    } catch (jsonError) {
+      const text = await response.text();
+      if (text && text.trim().length > 0) {
+        message = text;
+      }
+    }
+    return message;
   };
 
   const getErrorMessage = (err, fallback = "Network error. Please try again.") => {
@@ -35,7 +56,7 @@ const AdminDashboard = () => {
     ) {
       return "Cannot reach the backend server. Please start the backend and refresh the page.";
     }
-    return fallback;
+    return message || fallback;
   };
 
   useEffect(() => {
@@ -76,7 +97,8 @@ const AdminDashboard = () => {
           navigate("/admin/login");
           return;
         }
-        throw new Error("Failed to fetch submissions");
+        const errorMessage = await parseResponseError(response);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -111,7 +133,8 @@ const AdminDashboard = () => {
           navigate("/admin/login");
           return;
         }
-        throw new Error("Failed to fetch payments");
+        const errorMessage = await parseResponseError(response);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -138,7 +161,8 @@ const AdminDashboard = () => {
       });
 
       if (!response.ok) {
-        console.error("Failed to fetch diocesan accounts");
+        const errorMessage = await parseResponseError(response);
+        console.error("Failed to fetch diocesan accounts:", errorMessage);
         return;
       }
 
@@ -168,7 +192,10 @@ const AdminDashboard = () => {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (!response.ok) throw new Error("Failed to update status");
+      if (!response.ok) {
+        const errorMessage = await parseResponseError(response);
+        throw new Error(errorMessage);
+      }
 
       const data = await response.json();
       setSubmissions(
@@ -190,7 +217,10 @@ const AdminDashboard = () => {
         },
       });
 
-      if (!response.ok) throw new Error("Failed to delete submission");
+      if (!response.ok) {
+        const errorMessage = await parseResponseError(response);
+        throw new Error(errorMessage);
+      }
 
       setSubmissions(submissions.filter((sub) => sub.id !== id));
       setDeleteConfirm(null);
@@ -213,6 +243,22 @@ const AdminDashboard = () => {
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString();
   };
+
+  // Pagination helpers
+  const getPaginatedData = (data, currentPage) => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return data.slice(startIndex, startIndex + itemsPerPage);
+  };
+
+  const getTotalPages = (data) => {
+    return Math.ceil(data.length / itemsPerPage);
+  };
+
+  const paginatedSubmissions = getPaginatedData(submissions, currentPageRegistrations);
+  const totalPagesRegistrations = getTotalPages(submissions);
+
+  const paginatedPayments = getPaginatedData(payments, currentPagePayments);
+  const totalPagesPayments = getTotalPages(payments);
 
   if (loading) {
     return (
@@ -356,60 +402,88 @@ const AdminDashboard = () => {
                 <p className="text-gray-500 text-lg">No submissions yet</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Denary</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {submissions.map((submission) => (
-                      <tr key={submission.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-800">{submission.name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{submission.email}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{submission.denary}</td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            {getStatusIcon(submission.status)}
-                            <span className={`text-xs font-semibold uppercase ${
-                              submission.status === "approved"
-                                ? "text-green-600"
-                                : submission.status === "rejected"
-                                ? "text-red-600"
-                                : "text-yellow-600"
-                            }`}>
-                              {submission.status}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{formatDate(submission.submittedAt)}</td>
-                        <td className="px-6 py-4 text-sm space-x-2">
-                          <button
-                            onClick={() => setSelectedSubmission(submission)}
-                            className="text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1"
-                          >
-                            <Eye className="w-4 h-4" />
-                            View
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirm(submission.id)}
-                            className="text-red-600 hover:text-red-800 transition-colors inline-flex items-center gap-1"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Delete
-                          </button>
-                        </td>
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Email</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Denary</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Date</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {paginatedSubmissions.map((submission) => (
+                        <tr key={submission.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm font-medium text-gray-800">{submission.name}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{submission.email}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{submission.denary}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(submission.status)}
+                              <span className={`text-xs font-semibold uppercase ${
+                                submission.status === "approved"
+                                  ? "text-green-600"
+                                  : submission.status === "rejected"
+                                  ? "text-red-600"
+                                  : "text-yellow-600"
+                              }`}>
+                                {submission.status}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{formatDate(submission.submittedAt)}</td>
+                          <td className="px-6 py-4 text-sm space-x-2">
+                            <button
+                              onClick={() => setSelectedSubmission(submission)}
+                              className="text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1"
+                            >
+                              <Eye className="w-4 h-4" />
+                              View
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirm(submission.id)}
+                              className="text-red-600 hover:text-red-800 transition-colors inline-flex items-center gap-1"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Pagination Controls for Registrations */}
+                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                  <div className="text-sm text-gray-600">
+                    Showing {submissions.length === 0 ? 0 : (currentPageRegistrations - 1) * itemsPerPage + 1} to {Math.min(currentPageRegistrations * itemsPerPage, submissions.length)} of {submissions.length}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPageRegistrations(prev => Math.max(1, prev - 1))}
+                      disabled={currentPageRegistrations === 1}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      ← Previous
+                    </button>
+                    <div className="px-4 py-2 text-gray-700">
+                      Page {currentPageRegistrations} of {totalPagesRegistrations || 1}
+                    </div>
+                    <button
+                      onClick={() => setCurrentPageRegistrations(prev => Math.min(totalPagesRegistrations, prev + 1))}
+                      disabled={currentPageRegistrations === totalPagesRegistrations}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         ) : (
@@ -423,50 +497,77 @@ const AdminDashboard = () => {
                 <p className="text-gray-500 text-lg">No payments yet</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Method</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {payments.map((payment) => (
-                      <tr key={payment.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-800">{payment.name || 'N/A'}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{payment.email}</td>
-                        <td className="px-6 py-4 text-sm font-semibold text-green-600">${payment.amount?.toFixed(2) || '0.00'}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600 capitalize">{payment.paymentMethod}</td>
-                        <td className="px-6 py-4">
-                          <span className={`text-xs font-semibold uppercase px-2 py-1 rounded-full ${
-                            payment.status === "completed"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}>
-                            {payment.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{formatDate(payment.paidAt)}</td>
-                        <td className="px-6 py-4 text-sm">
-                          <button
-                            onClick={() => setSelectedPayment(payment)}
-                            className="text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1"
-                          >
-                            <Eye className="w-4 h-4" />
-                            View
-                          </button>
-                        </td>
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Email</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Amount</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Method</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Date</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {paginatedPayments.map((payment) => (
+                        <tr key={payment.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm font-medium text-gray-800">{payment.name || 'N/A'}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{payment.email}</td>
+                          <td className="px-6 py-4 text-sm font-semibold text-green-600">${payment.amount?.toFixed(2) || '0.00'}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600 capitalize">{payment.paymentMethod}</td>
+                          <td className="px-6 py-4">
+                            <span className={`text-xs font-semibold uppercase px-2 py-1 rounded-full ${
+                              payment.status === "completed"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}>
+                              {payment.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{formatDate(payment.paidAt)}</td>
+                          <td className="px-6 py-4 text-sm">
+                            <button
+                              onClick={() => setSelectedPayment(payment)}
+                              className="text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-1"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Pagination Controls for Payments */}
+                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                  <div className="text-sm text-gray-600">
+                    Showing {payments.length === 0 ? 0 : (currentPagePayments - 1) * itemsPerPage + 1} to {Math.min(currentPagePayments * itemsPerPage, payments.length)} of {payments.length}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPagePayments(prev => Math.max(1, prev - 1))}
+                      disabled={currentPagePayments === 1}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      ← Previous
+                    </button>
+                    <div className="px-4 py-2 text-gray-700">
+                      Page {currentPagePayments} of {totalPagesPayments || 1}
+                    </div>
+                    <button
+                      onClick={() => setCurrentPagePayments(prev => Math.min(totalPagesPayments, prev + 1))}
+                      disabled={currentPagePayments === totalPagesPayments}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         )}
